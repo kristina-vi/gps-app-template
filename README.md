@@ -191,10 +191,15 @@ Before deploying to production:
    - Enable HTTPS
    - Set `cookie.secure: true` in session configuration
    - Update CORS settings for your domain
+   - Implement [Refresh Token rotation](https://developer.getjobber.com/docs/building_your_app/app_authorization/#refresh-token-flow)
 
 3. **Redirect URI:**
    - Update the redirect URI in your Jobber app settings
    - Update `REDIRECT_URI` in your configuration
+  
+4. **Handle App Disconnect **
+   - This template doesn't handle user disconnect
+   - The documentation on the disconnect flow can be found [here](https://developer.getjobber.com/docs/building_your_app/app_authorization/#handling-app-disconnects)
 
 ## Support
 
