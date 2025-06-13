@@ -36,7 +36,7 @@ A Node.js template for building applications that integrate with Jobber's API us
    - Select your app and click edit
      ![image](https://github.com/user-attachments/assets/9fd648a4-73db-434e-a95e-c37d44733ca8)
    - Set the redirect URI to: `http://localhost:3001/auth/callback`
-   - Turn on the Vehicle and Equipment scope to ON
+   - Enable the Vehicle and Equipment scope
    - ![image](https://github.com/user-attachments/assets/f51611ee-355f-4ec1-b917-7befceca985d)
    - Note down your Client ID and Client Secret
 
