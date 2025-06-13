@@ -1,6 +1,5 @@
 const express = require("express");
 const axios = require("axios");
-const https = require("https");
 const session = require("express-session");
 const cors = require("cors");
 const path = require("path");
@@ -33,8 +32,7 @@ app.get("/auth/login", (req, res) => {
     `${config.JOBBER_AUTH_URL}?` +
     `client_id=${encodeURIComponent(config.JOBBER_CLIENT_ID)}&` +
     `redirect_uri=${encodeURIComponent(config.REDIRECT_URI)}&` +
-    `response_type=code&` +
-    `scope=read_vehicles,write_vehicles`;
+    `response_type=code&`;
   res.redirect(authUrl);
 });
 
@@ -99,7 +97,7 @@ app.post("/api/auth/logout", (req, res) => {
   res.json({ success: true });
 });
 
-// Create vehicle using native Node.js https (to bypass Cloudflare bot detection)
+// Create vehicle endpoint - uses native Node.js https for direct GraphQL API calls
 app.post("/api/vehicles", async (req, res) => {
   console.log("Vehicle creation request received:", req.body);
 
@@ -147,159 +145,69 @@ app.post("/api/vehicles", async (req, res) => {
 
   console.log("Making GraphQL request to:", config.JOBBER_GRAPHQL_URL);
   console.log("With variables:", variables);
-  console.log(
-    "Access token (first 20 chars):",
-    req.session.accessToken.substring(0, 20) + "..."
-  );
-  console.log(
-    "Full Authorization header:",
-    `Bearer ${req.session.accessToken}`
-  );
-
-  // Let's also try to decode the JWT to see what's in it
-  try {
-    const tokenParts = req.session.accessToken.split(".");
-    if (tokenParts.length === 3) {
-      const payload = JSON.parse(
-        Buffer.from(tokenParts[1], "base64").toString()
-      );
-      console.log("JWT payload:", payload);
-      console.log("Token expires at:", new Date(payload.exp * 1000));
-      console.log("Current time:", new Date());
-      console.log("Token expired?", payload.exp * 1000 < Date.now());
-    }
-  } catch (e) {
-    console.log("Could not decode JWT:", e.message);
-  }
 
   // Test if the token works with a simple API call first
   console.log("Testing token with a simple GraphQL query...");
   try {
     const testQuery = `query { viewer { id } }`;
-    const testOptions = {
-      hostname: "api.getjobber.com",
-      port: 443,
-      path: "/api/graphql",
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${req.session.accessToken}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "X-JOBBER-GRAPHQL-VERSION": "2025-01-20",
-        "Content-Length": Buffer.byteLength(
-          JSON.stringify({ query: testQuery })
-        ),
+    const testResponse = await axios.post(
+      config.JOBBER_GRAPHQL_URL,
+      {
+        query: testQuery,
       },
-    };
+      {
+        headers: {
+          Authorization: `Bearer ${req.session.accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-JOBBER-GRAPHQL-VERSION": config.API_VERSION,
+        },
+      }
+    );
 
-    const testResponse = await new Promise((resolve, reject) => {
-      const testReq = https.request(testOptions, (res) => {
-        let data = "";
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
-        res.on("end", () => {
-          resolve({
-            statusCode: res.statusCode,
-            headers: res.headers,
-            data: data,
-          });
-        });
-      });
-      testReq.on("error", (error) => {
-        reject(error);
-      });
-      testReq.write(JSON.stringify({ query: testQuery }));
-      testReq.end();
-    });
-
-    console.log("Test query response status:", testResponse.statusCode);
-    if (testResponse.statusCode !== 200) {
-      console.log("Test query failed - headers:", testResponse.headers);
-      console.log("Test query failed - data:", testResponse.data);
-    } else {
-      console.log("Test query succeeded! Token appears valid.");
-    }
+    console.log("Test query response status:", testResponse.status);
+    console.log("Test query succeeded! Token appears valid.");
   } catch (testError) {
-    console.log("Test query error:", testError.message);
+    console.log(
+      "Test query error:",
+      testError.response?.status,
+      testError.response?.data || testError.message
+    );
   }
 
   try {
-    const postData = JSON.stringify({
-      query: mutation,
-      variables: variables,
-    });
-
-    const options = {
-      hostname: "api.getjobber.com",
-      port: 443,
-      path: "/api/graphql",
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${req.session.accessToken}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "X-JOBBER-GRAPHQL-VERSION": "2025-01-20",
-        "Content-Length": Buffer.byteLength(postData),
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive",
+    // Make GraphQL request to create vehicle
+    const response = await axios.post(
+      config.JOBBER_GRAPHQL_URL,
+      {
+        query: mutation,
+        variables: variables,
       },
-    };
+      {
+        headers: {
+          Authorization: `Bearer ${req.session.accessToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-JOBBER-GRAPHQL-VERSION": config.API_VERSION,
+        },
+      }
+    );
 
-    const response = await new Promise((resolve, reject) => {
-      const req = https.request(options, (res) => {
-        let data = "";
-
-        res.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        res.on("end", () => {
-          resolve({
-            statusCode: res.statusCode,
-            headers: res.headers,
-            data: data,
-          });
-        });
-      });
-
-      req.on("error", (error) => {
-        reject(error);
-      });
-
-      req.write(postData);
-      req.end();
-    });
-
-    console.log("GraphQL response status:", response.statusCode);
-    console.log("GraphQL response headers:", response.headers);
+    console.log("GraphQL response status:", response.status);
     console.log("GraphQL response data:", response.data);
 
-    if (response.statusCode === 301 || response.statusCode === 302) {
-      console.log("Redirect detected to:", response.headers.location);
-      throw new Error(
-        `HTTP ${response.statusCode}: Redirect to ${response.headers.location}`
-      );
+    // Check for GraphQL errors
+    if (response.data.errors) {
+      console.error("GraphQL errors:", response.data.errors);
+      return res.status(400).json({
+        error: "GraphQL errors",
+        details: response.data.errors,
+      });
     }
 
-    if (response.statusCode !== 200) {
-      throw new Error(`HTTP ${response.statusCode}: ${response.data}`);
-    }
+    const vehicleResult = response.data.data.vehicleCreate;
 
-    const result = JSON.parse(response.data);
-
-    if (result.errors) {
-      console.error("GraphQL errors:", result.errors);
-      return res
-        .status(400)
-        .json({ error: "GraphQL errors", details: result.errors });
-    }
-
-    const vehicleResult = result.data.vehicleCreate;
-
+    // Check for user validation errors
     if (vehicleResult.userErrors && vehicleResult.userErrors.length > 0) {
       console.log("Validation errors:", vehicleResult.userErrors);
       return res.status(400).json({
@@ -308,24 +216,28 @@ app.post("/api/vehicles", async (req, res) => {
       });
     }
 
+    // Success - return the created vehicle
     console.log("Vehicle created successfully:", vehicleResult.vehicle);
     res.json({ success: true, vehicle: vehicleResult.vehicle });
   } catch (error) {
-    console.error("Vehicle creation error:", error);
+    console.error(
+      "Vehicle creation error:",
+      error.response?.data || error.message
+    );
 
-    if (
-      error.message &&
-      (error.message.includes("401") || error.message.includes("403"))
-    ) {
+    // Handle authentication errors
+    if (error.response?.status === 401 || error.response?.status === 403) {
       req.session.destroy();
-      return res
-        .status(401)
-        .json({ error: "Authentication expired", needsReauth: true });
+      return res.status(401).json({
+        error: "Authentication expired",
+        needsReauth: true,
+      });
     }
 
-    res
-      .status(500)
-      .json({ error: "Failed to create vehicle", details: error.message });
+    res.status(500).json({
+      error: "Failed to create vehicle",
+      details: error.response?.data || error.message,
+    });
   }
 });
 
