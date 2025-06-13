@@ -7,14 +7,13 @@ A Node.js template for building applications that integrate with Jobber's API us
 - 🔐 OAuth 2.0 authentication with Jobber
 - 🔌 GraphQL API integration
 - 🚗 Example: Create vehicles with make, model, year, and name
-- 🛡️ Secure session-based token storage
 
 ## Prerequisites
 
+- [Developer Center account](https://developer.getjobber.com/)
+- [An app in the Developer Center](https://developer.getjobber.com/apps). You can use the existing one or create a new one.
 - Node.js (version 14 or higher)
 - npm or yarn
-- A Jobber developer account with OAuth app configured
-- A Jobber test (SP) account, which we will connect to the app
 
 ## Installation
 
@@ -31,15 +30,19 @@ A Node.js template for building applications that integrate with Jobber's API us
    npm install
    ```
 
-3. **Configure your Jobber OAuth app:**
+3. **Configure your Jobber app:**
 
-   - Go to your Jobber developer dashboard
+   - Go to your Jobber [Developer Center](https://developer.getjobber.com/apps)
+   - Select your app and click edit
+     ![image](https://github.com/user-attachments/assets/9fd648a4-73db-434e-a95e-c37d44733ca8)
    - Set the redirect URI to: `http://localhost:3001/auth/callback`
+   - Turn on the Vehicle and Equipment scope to ON
+   - ![image](https://github.com/user-attachments/assets/f51611ee-355f-4ec1-b917-7befceca985d)
    - Note down your Client ID and Client Secret
 
 4. **Set up configuration:**
 
-   Copy the example config file and add your credentials:
+   Copy the example config file:
 
    ```bash
    cp config.example.js config.js
