@@ -6,10 +6,6 @@ A Node.js single-page application that integrates with Jobber's API using OAuth 
 
 - 🔐 OAuth 2.0 authentication with Jobber
 - 🚗 Create vehicles with make, model, and year
-- 🎨 Modern, responsive UI with Bootstrap
-- ⚡ Real-time form validation
-- 🔄 Session management
-- 📱 Mobile-friendly design
 
 ## Prerequisites
 
