@@ -1,4 +1,4 @@
-# Jobber Vehicle Manager
+# Jobber GPS App Template
 
 A Node.js single-page application that integrates with Jobber's API using OAuth 2.0 to create vehicles.
 
@@ -12,14 +12,15 @@ A Node.js single-page application that integrates with Jobber's API using OAuth 
 - Node.js (version 14 or higher)
 - npm or yarn
 - A Jobber developer account with OAuth app configured
+- A Jobber test (SP) account, which we will connect to the app
 
 ## Installation
 
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/jobber-vehicle-manager.git
-   cd jobber-vehicle-manager
+   git clone https://github.com/kristina-vi/gps-app-template.git
+   cd gps-app-template
    ```
 
 2. **Install dependencies:**
@@ -85,13 +86,13 @@ A Node.js single-page application that integrates with Jobber's API using OAuth 
 ## Project Structure
 
 ```
-├── server.js           # Express server with OAuth and GraphQL integration
+├── server.js          # Express server with OAuth and GraphQL integration
 ├── config.js          # Configuration file with OAuth credentials (gitignored)
-├── config.example.js   # Example configuration file for setup
+├── config.example.js  # Example configuration file for setup
 ├── package.json       # Node.js dependencies and scripts
 ├── .gitignore         # Git ignore rules
 ├── public/
-│   ├── index.html     # Frontend HTML with modern UI
+│   ├── index.html     # Frontend HTML
 │   └── script.js      # Frontend JavaScript for API communication
 └── README.md          # This file
 ```
@@ -155,17 +156,11 @@ The application handles various error scenarios:
 
 2. **"Failed to create vehicle"**
 
-   - Check that you have the required permissions (`read_vehicles`, `write_vehicles`)
+   - Check that you have the required scope (`read_vehicles`, `write_vehicles`) in your App setting in Dev Center
    - Verify all form fields are filled correctly
 
 3. **"Session expired"**
    - Click "Connect with Jobber" to re-authenticate
-
-### Development Tips
-
-- Check the browser console for detailed error messages
-- Monitor the server console for backend errors
-- Use developer tools to inspect network requests
 
 ## Production Deployment
 
