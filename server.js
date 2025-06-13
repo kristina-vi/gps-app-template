@@ -97,20 +97,15 @@ app.post("/api/auth/logout", (req, res) => {
   res.json({ success: true });
 });
 
-// Create vehicle endpoint - uses native Node.js https for direct GraphQL API calls
+// Create vehicle endpoint
 app.post("/api/vehicles", async (req, res) => {
-  console.log("Vehicle creation request received:", req.body);
-
   if (!req.session.accessToken) {
-    console.log("No access token found in session");
     return res.status(401).json({ error: "Not authenticated" });
   }
 
   const { name, make, model, year } = req.body;
-  console.log("Extracted data:", { name, make, model, year });
 
   if (!name || !make || !model || !year) {
-    console.log("Missing required fields");
     return res
       .status(400)
       .json({ error: "Name, make, model, and year are required" });
@@ -143,38 +138,6 @@ app.post("/api/vehicles", async (req, res) => {
     },
   };
 
-  console.log("Making GraphQL request to:", config.JOBBER_GRAPHQL_URL);
-  console.log("With variables:", variables);
-
-  // Test if the token works with a simple API call first
-  console.log("Testing token with a simple GraphQL query...");
-  try {
-    const testQuery = `query { viewer { id } }`;
-    const testResponse = await axios.post(
-      config.JOBBER_GRAPHQL_URL,
-      {
-        query: testQuery,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${req.session.accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "X-JOBBER-GRAPHQL-VERSION": config.API_VERSION,
-        },
-      }
-    );
-
-    console.log("Test query response status:", testResponse.status);
-    console.log("Test query succeeded! Token appears valid.");
-  } catch (testError) {
-    console.log(
-      "Test query error:",
-      testError.response?.status,
-      testError.response?.data || testError.message
-    );
-  }
-
   try {
     // Make GraphQL request to create vehicle
     const response = await axios.post(
@@ -193,12 +156,8 @@ app.post("/api/vehicles", async (req, res) => {
       }
     );
 
-    console.log("GraphQL response status:", response.status);
-    console.log("GraphQL response data:", response.data);
-
     // Check for GraphQL errors
     if (response.data.errors) {
-      console.error("GraphQL errors:", response.data.errors);
       return res.status(400).json({
         error: "GraphQL errors",
         details: response.data.errors,
@@ -209,7 +168,6 @@ app.post("/api/vehicles", async (req, res) => {
 
     // Check for user validation errors
     if (vehicleResult.userErrors && vehicleResult.userErrors.length > 0) {
-      console.log("Validation errors:", vehicleResult.userErrors);
       return res.status(400).json({
         error: "Validation errors",
         details: vehicleResult.userErrors,
@@ -217,14 +175,8 @@ app.post("/api/vehicles", async (req, res) => {
     }
 
     // Success - return the created vehicle
-    console.log("Vehicle created successfully:", vehicleResult.vehicle);
     res.json({ success: true, vehicle: vehicleResult.vehicle });
   } catch (error) {
-    console.error(
-      "Vehicle creation error:",
-      error.response?.data || error.message
-    );
-
     // Handle authentication errors
     if (error.response?.status === 401 || error.response?.status === 403) {
       req.session.destroy();

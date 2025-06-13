@@ -1,11 +1,13 @@
-# Jobber GPS App Template
+# Jobber OAuth API Template
 
-A Node.js single-page application that integrates with Jobber's API using OAuth 2.0 to create vehicles.
+A Node.js template for building applications that integrate with Jobber's API using OAuth 2.0 and GraphQL.
 
 ## Features
 
 - 🔐 OAuth 2.0 authentication with Jobber
-- 🚗 Create vehicles with make, model, and year
+- 🔌 GraphQL API integration
+- 🚗 Example: Create vehicles with make, model, year, and name
+- 🛡️ Secure session-based token storage
 
 ## Prerequisites
 
@@ -78,10 +80,11 @@ A Node.js single-page application that integrates with Jobber's API using OAuth 
    - Grant the required permissions
    - You'll be redirected back to the application
 
-4. **Create vehicles:**
-   - Fill out the vehicle form with make, model, and year
-   - Click "Create Vehicle"
-   - The vehicle will be created in your Jobber account
+4. **Use the API:**
+   - The template includes a sample vehicle creation form
+   - Fill out the form with make, model, year, and name
+   - Click "Create Vehicle" to test the GraphQL API
+   - Customize the API calls for your specific use case
 
 ## Project Structure
 
@@ -109,13 +112,14 @@ A Node.js single-page application that integrates with Jobber's API using OAuth 
 
 ## GraphQL Integration
 
-The application uses Jobber's GraphQL API with the `vehicleCreate` mutation:
+This template demonstrates GraphQL API usage with a `vehicleCreate` mutation example:
 
 ```graphql
 mutation CreateVehicle($input: VehicleCreateInput!) {
   vehicleCreate(input: $input) {
     vehicle {
       id
+      name
       make
       model
       year
@@ -127,6 +131,17 @@ mutation CreateVehicle($input: VehicleCreateInput!) {
   }
 }
 ```
+
+## Customizing for Your Use Case
+
+This template uses vehicle creation as an example. To adapt it for your needs:
+
+1. **Replace the GraphQL mutation** in `server.js` with your desired Jobber API operations
+2. **Update the frontend form** in `public/index.html` to match your data requirements
+3. **Modify the API endpoint** in `server.js` (currently `/api/vehicles`) to match your functionality
+4. **Update validation and error handling** as needed for your specific use case
+
+You can integrate with any part of Jobber's GraphQL API - clients, jobs, invoices, team members, etc.
 
 ## Error Handling
 
@@ -156,8 +171,8 @@ The application handles various error scenarios:
 
 2. **"Failed to create vehicle"**
 
-   - Check that you have the required scope (`read_vehicles`, `write_vehicles`) in your App setting in Dev Center
    - Verify all form fields are filled correctly
+   - Check that your Jobber app has permission to create vehicles
 
 3. **"Session expired"**
    - Click "Connect with Jobber" to re-authenticate
