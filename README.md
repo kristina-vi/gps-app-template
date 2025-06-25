@@ -159,7 +159,6 @@ The application handles various error scenarios:
 ## Security Features
 
 - Client secret is kept on the server (not exposed to frontend)
-- OAuth state parameter prevents CSRF attacks
 - Session-based token storage
 - Input validation and sanitization
 
@@ -200,7 +199,7 @@ Before deploying to production:
    - Update the redirect URI in your Jobber app settings
    - Update `REDIRECT_URI` in your configuration
   
-4. **Handle App Disconnect **
+4. **Handle App Disconnect**
    - This template doesn't handle user disconnect
    - The documentation on the disconnect flow can be found [here](https://developer.getjobber.com/docs/building_your_app/app_authorization/#handling-app-disconnects)
 
@@ -213,4 +212,4 @@ For issues with:
 
 ## License
 
-This project is provided as-is for demonstration purposes.
+This project is provided as-is **for demonstration purposes.**
